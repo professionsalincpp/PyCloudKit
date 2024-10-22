@@ -64,26 +64,26 @@ class CloudServer(AsyncServer):
     def start(self) -> None:
         super().start()
         
-    async def get(self, request: Request) -> Response:
+    async def get(self, request: RequestType) -> ResponseType:
         if request.params.get("key") is None:
-            return Response(404, {}, "Bad request, please specify key")
+            return ResponseType(404, {}, "Bad request, please specify key")
         key = request.params["key"]
-        return Response(200, {}, body=str(self.database.get(key)).encode("utf-8"))
+        return ResponseType(200, {}, body=str(self.database.get(key)).encode("utf-8"))
 
-    async def set(self, request: Request) -> Response:
+    async def set(self, request: RequestType) -> ResponseType:
         if request.params.get("key") is None or request.params.get("value") is None:
-            return Response(404, {}, body="Bad request, please specify key and value")
+            return ResponseType(404, {}, body="Bad request, please specify key and value")
         key = request.params["key"]
         value = request.params["value"]
         self.database.set(key, from_string(decode_string(value)))
-        return Response(200, {}, body="OK")
+        return ResponseType(200, {}, body="OK")
 
-    async def delete(self, request: Request) -> Response:
+    async def delete(self, request: RequestType) -> ResponseType:
         if request.params.get("key") is None:
-            return Response(404, body="Bad request, please specify key")
+            return ResponseType(404, body="Bad request, please specify key")
         key = request.params["key"]
         self.database.delete(key)
-        return Response(200, body="OK")
+        return ResponseType(200, body="OK")
 
 class CloudClient(AsyncClient):
     def __init__(self, host: str, port: int) -> None:
