@@ -40,7 +40,7 @@ class RequestHandler:
         if len(inspect.signature(self.func).parameters) != 1 and len(inspect.signature(self.func).parameters) != 0:
             raise ValueError("func must have 1 or 0 parameters")
     
-    async def handle(self, request: Request) -> Response:
+    async def handle(self, request: RequestType) -> ResponseType:
         await self.check_signature()
         result = None
         func_params = inspect.signature(self.func).parameters

@@ -5,7 +5,7 @@ class AsyncClient:
         self.host: str = host
         self.port: int = port
     
-    async def get(self, path: str) -> Response:
+    async def get(self, path: str) -> ResponseType:
         request = AsyncRequest(self.host, self.port)
         await request.start()
         try:
@@ -14,7 +14,7 @@ class AsyncClient:
         finally:
             await request.close()
         
-    async def post(self, path: str, data: bytes) -> Response:
+    async def post(self, path: str, data: bytes) -> ResponseType:
         request = AsyncRequest(self.host, self.port)
         await request.start()
         try:

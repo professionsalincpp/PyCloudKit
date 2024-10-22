@@ -397,7 +397,7 @@
         "kind": 6,
         "importPath": "pyserver.src.client",
         "description": "pyserver.src.client",
-        "peekOfCode": "class AsyncClient:\n    def __init__(self, host: str, port: int) -> None:\n        self.host: str = host\n        self.port: int = port\n    async def get(self, path: str) -> Response:\n        request = AsyncRequest(self.host, self.port)\n        await request.start()\n        try:\n            print(f\"Requesting {path}\")\n            return await request.get(path)",
+        "peekOfCode": "class AsyncClient:\n    def __init__(self, host: str, port: int) -> None:\n        self.host: str = host\n        self.port: int = port\n    async def get(self, path: str) -> ResponseType:\n        request = AsyncRequest(self.host, self.port)\n        await request.start()\n        try:\n            print(f\"Requesting {path}\")\n            return await request.get(path)",
         "detail": "pyserver.src.client",
         "documentation": {}
     },
