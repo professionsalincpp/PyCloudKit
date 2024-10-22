@@ -1,6 +1,6 @@
 import asyncio
 from pyserver.cloud import CloudClient
-from pyserver.cloud.cloud import from_string
+from pyserver.cloud.src.cloud import from_string
 
 client = CloudClient('127.0.0.1', 8080)
 

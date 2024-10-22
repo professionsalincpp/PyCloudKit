@@ -1,89 +1,9 @@
 import sqlite3
 from typing import Union, Any, override, overload
-from ..src.server import AsyncServer
-from ..src.client import AsyncClient
-from ..src.request import *
-
-py_object_union = Union[str, int, float, bool, list, dict, bytes, bytearray, tuple, None] 
-
-def is_py_object(value: Any) -> bool:
-    return isinstance(value, py_object_union)
-
-def is_class_object(value: Any) -> bool:
-    return isinstance(value, object) and not is_py_object(value)
-
-def decode_string(value: str) -> str:
-    return value.replace("%22", '"').replace("%27", "'").replace("%20", " ").replace("%5B", "[").replace("%5D", "]").replace("%2C", ",").replace("%3D", "=").replace("%2B", "+").replace("%3A", ":").replace("%3B", ";").replace("%40", "@").replace("%24", "$").replace("%7B", "{").replace("%7D", "}")
-
-def encode_string(value: str) -> str:
-    return value.replace('"', "%22").replace("'", "%27").replace(' ', "%20").replace("[", "%5B").replace("]", "%5D").replace(",", "%2C").replace("=", "%3D").replace("+", "%2B").replace(":", "%3A").replace(";","%3B").replace("@","%40").replace("$","%24").replace("{","%7B").replace("}","%7D")
-
-def from_string(value: str) -> Any:
-    try:
-        return eval(value)
-    except:
-        return value
-
-class CloudObject:
-    def __init__(self, value: Any) -> None:
-        self.value = value
-
-    def to_string(self) -> str:
-        raise NotImplementedError
-
-    def from_string(self, value: str) -> None:
-        raise NotImplementedError
-
-
-class PyCloudObject(CloudObject):
-    def __init__(self, value: Any) -> None:
-        self.value = value
-
-    def to_string(self) -> str:
-        if isinstance(self.value, str):
-            return f'"{self.value}"'
-        return str(self.value)
-    
-    def from_string(self, value: str) -> None:
-        self.value = eval(value)
-
-    def __repr__(self) -> str:
-        return self.to_string()
-
-class ClassCloudObject(CloudObject):
-    def __init__(self, value: object) -> None:
-        super().__init__(value)
-        
-    def to_string(self) -> str:
-        _class = self.value.__class__
-        _dict = _class.__dict__
-        return f"{_class.__name__}({_dict})"
-
-    def from_string(self, value: str) -> None:
-        _classstr = value.split('(')[0]
-        _dictstr = value.split('(')[1].rstrip(')')
-        _class = eval(f"{_classstr}")
-        _dict = eval(f"{_dictstr}")
-        self.value = _class(**_dict)
-        _class.__dict__ = _dict
-
-    def __repr__(self) -> str:
-        return self.to_string()
-    
-
-class AnyCloudObject(CloudObject):
-    def __init__(self, value: Any) -> None:
-        super().__init__(value)
-
-    def to_string(self) -> str:
-        if is_py_object(self.value):
-            return PyCloudObject(self.value).to_string()
-        elif is_class_object(self.value):
-            return ClassCloudObject(self.value).to_string()
-        raise NotImplementedError
-
-    def from_string(self, value: str) -> None:
-        self.value = eval(value)
+from ...src.server import AsyncServer
+from ...src.client import AsyncClient
+from ...src.request import *
+from .cloudtypes import *
 
 
 class CloudDatabase:

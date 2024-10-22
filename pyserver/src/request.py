@@ -1,15 +1,12 @@
 from __future__ import annotations
 import asyncio
-import inspect
 from dataclasses import dataclass, field
 from enum import Enum
 from http.client import HTTPConnection, HTTPResponse
 from http.server import BaseHTTPRequestHandler
-from typing import Callable, Literal, Optional, Tuple, List, Dict
-
-def encode_string(value: str) -> str:
-    return value.replace('"', "%22").replace("'", "%27").replace(' ', "%20").replace("[", "%5B").replace("]", "%5D").replace(",", "%2C").replace("+", "%2B").replace(":", "%3A").replace(";","%3B").replace("@","%40").replace("$","%24").replace("{","%7B").replace("}","%7D")
-
+from typing import Optional, List, Dict
+from .types import *
+from .utils import *
 
 class AsyncRequest:
 
@@ -26,11 +23,8 @@ class AsyncRequest:
     async def start(self) -> None:
         await self._start()
 
-    async def stop(self) -> None:
-        await asyncio.to_thread(self.client.close)
-
     async def get(self, path: str) -> bytes:
-        await asyncio.to_thread(self.client.request, 'GET', encode_string(path))
+        await asyncio.to_thread(self.client.request, 'GET', encode_uri_params(path))
         return self.client.getresponse().read()
 
     async def post(self, path: str, data: bytes) -> bytes:
@@ -39,51 +33,6 @@ class AsyncRequest:
     
     async def close(self) -> None:
         await asyncio.to_thread(self.client.close)
-    
-@dataclass
-class Response:
-    status_code: int
-    headers: Dict[str, str]
-    body: bytes
-    def __str__(self) -> str:
-        return f"Response(status_code={self.status_code}, headers={self.headers}, body={self.body})"
-
-    def __repr__(self) -> str:
-        return f"Response(status_code={self.status_code}, headers={self.headers}, body={self.body})"
-
-@dataclass
-class Request(Response):
-    params: Dict[str, str]
-    def __str__(self) -> str:
-        return f"Request(status_code={self.status_code}, headers={self.headers}, body={self.body}, params={self.params})"
-
-    def __repr__(self) -> str:
-        return f"Request(status_code={self.status_code}, headers={self.headers}, body={self.body}, params={self.params})"
-
-class RequestHandler:
-    class Method(Enum):
-        GET = 1
-        POST = 2
-    def __init__(self, func: Callable[[Request], Response], method: Method=Method.GET, path: str="/") -> None:
-        self.func = func
-        self.method = method
-        self.path = path
-
-    async def check_signature(self) -> None:
-        if not inspect.iscoroutinefunction(self.func):
-            raise ValueError("func must be a coroutine function")
-        if len(inspect.signature(self.func).parameters) != 1 and len(inspect.signature(self.func).parameters) != 0:
-            raise ValueError("func must have 1 or 0 parameters")
-    
-    async def handle(self, request: Request) -> Response:
-        await self.check_signature()
-        result = None
-        func_params = inspect.signature(self.func).parameters
-        if len(func_params) == 1:
-            result = await self.func(request)
-        elif len(func_params) == 0:
-            result = await self.func()
-        return result
 
 
 def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_async_request_handler.AsyncRequestHandler]:
@@ -112,7 +61,7 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
                     params[key] = value
             for handler in self.handlers:
                 if handler.path == filename and handler.method == RequestHandler.Method.GET:
-                    response: Response = await handler.handle(request=Request(status_code=200, headers=self.headers, body=b"", params=params))
+                    response: ResponseType = await handler.handle(request=RequestType(status_code=200, headers=self.headers, body=b"", params=params))
                     response.headers["Connection"] = "close"
                     self.send_response(response.status_code)
                     for key, value in response.headers.items():
