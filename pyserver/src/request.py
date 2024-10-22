@@ -1,11 +1,15 @@
 from __future__ import annotations
 import asyncio
 import inspect
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from http.client import HTTPConnection, HTTPResponse
 from http.server import BaseHTTPRequestHandler
 from typing import Callable, Literal, Optional, Tuple, List, Dict
+
+def encode_string(value: str) -> str:
+    return value.replace('"', "%22").replace("'", "%27").replace(' ', "%20").replace("[", "%5B").replace("]", "%5D").replace(",", "%2C").replace("+", "%2B").replace(":", "%3A").replace(";","%3B").replace("@","%40").replace("$","%24").replace("{","%7B").replace("}","%7D")
+
 
 class AsyncRequest:
 
@@ -16,21 +20,25 @@ class AsyncRequest:
 
     async def _start(self) -> None:
         self.client = HTTPConnection(self.host, self.port)
+        print(f"Client connected {self.client}")
         await asyncio.to_thread(self.client.connect)
 
     async def start(self) -> None:
-        await asyncio.to_thread(self._start)
+        await self._start()
 
     async def stop(self) -> None:
         await asyncio.to_thread(self.client.close)
 
     async def get(self, path: str) -> bytes:
-        await asyncio.to_thread(self.client.request, 'GET', path)
+        await asyncio.to_thread(self.client.request, 'GET', encode_string(path))
         return self.client.getresponse().read()
 
     async def post(self, path: str, data: bytes) -> bytes:
         await asyncio.to_thread(self.client.request, 'POST', path, body=data)
         return self.client.getresponse().read()
+    
+    async def close(self) -> None:
+        await asyncio.to_thread(self.client.close)
     
 @dataclass
 class Response:
@@ -98,6 +106,7 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
             params: Dict[str, str] = {}
             if '?' in filename:
                 filename, params_str = filename.split('?')
+                print("params_str", params_str)
                 for param in params_str.split('&'):
                     key, value = param.split('=')
                     params[key] = value

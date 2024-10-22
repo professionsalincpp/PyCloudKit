@@ -10,7 +10,11 @@ class AsyncServer:
         self.server: Optional[http.server.HTTPServer] = None
         self.task: Optional[asyncio.Task] = None
         self.handlers: List[RequestHandler] = []
+        self.__post_init__()
         print(f'Start server on http://{self.host}:{self.port}')
+
+    def __post_init__(self):
+        pass
 
     def route(self, path: str, method: Literal[RequestHandler.Method.GET, RequestHandler.Method.POST] = RequestHandler.Method.GET) -> None:
         def decorator(func: Callable[[RequestHandler], RequestHandler]) -> Callable[[RequestHandler], RequestHandler]:
