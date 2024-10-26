@@ -1,41 +1,57 @@
-# PyServer: Мощный и Легкий Сервер на Python
+# PyCloudKit: Набор инструментов для создания облака на Python
 
 ## Описание
 
-PyServer - это легкий и мощный сервер на Python, предназначенный для создания веб-приложений и микросервисов. Он предоставляет простой и интуитивно понятный API для работы с HTTP-запросами и ответами, а также поддерживает множество функций для создания сложных веб-приложений.
+PyCloudKit предоставляет набор инструментов для создания облака на Python. Он включает:
+* Серверный класс для поддержания облака
+* Клиентский класс для взаимодействия с облаком
 
 ## Функции
 
-*   Легкость использования: PyServer имеет простой и интуитивно понятный API, который позволяет быстро создавать веб-приложения и микросервисы.
-*   Мощный: PyServer поддерживает множество функций для создания сложных веб-приложений, включая поддержку WebSocket, CORS и другие.
-*   Небольшой размер: PyServer имеет небольшой размер и не требует много ресурсов для работы.
-*   Кроссплатформенность: PyServer может работать на любой платформе, поддерживающей Python.
-*   Поддержка HTTPS: PyServer поддерживает HTTPS и позволяет создавать безопасные веб-приложения.
+*   Легкость использования: PyCloudKit предоставляет простой интерфейс для создания и управления облаком.
+*   Интеграция: PyCloudKit может работать с любым другим кодом, который взаимодействует с облаком.
 
 ## Примеры использования
 
-### Простой сервер
+### Простое облако
 
 ```python
-from pyserver import Server
+from PyCloudKit import CloudServer
 
-server = Server()
+server = CloudServer('127.0.0.1', 8080, 'databases/cloud.db')
 
-@server.route('/')
-def index(request):
-    return 'Hello, World!'
+def main():
+    server.start()
 
-server.run()
+if __name__ == '__main__':
+    main()
 ```
 
+### Подключение к облаку
+
+```python
+from PyCloudKit import CloudClient
+
+client = CloudClient('127.0.0.1', 8080)
+
+def main():
+    # Задать значение в облаке
+    client.set('key', 'value')
+    # Получить значение из облака
+    value = client.get('key')
+    print(value)
+
+if __name__ == '__main__':
+    main()
+```
 # Установка
 
 Pyserver можно установить с помощью pip:
 
 ```bash
-pip install pyserver
+pip install PyCloudKit
 ```
 
 # Лицензия
 
-Pyserver является открытым проектом. Вы можете получить лицензию на [GitHub](https://github.com/professionsalincpp/pyserver/main/LICENSE).
+Pyserver является открытым проектом. Вы можете получить лицензию на [GitHub](https://github.com/professionsalincpp/PyCloudKit/main/LICENSE).
