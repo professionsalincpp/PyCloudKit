@@ -6,3 +6,4 @@ update.bat
 dist
 pyserver.egg-info
 *[Tt][Ee][Ss][Tt]*
+pycloudkit.egg-info
