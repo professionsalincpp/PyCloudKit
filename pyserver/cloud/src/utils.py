@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Optional, Any, Union
 
 py_object_union = Union[str, int, float, bool, list, dict, bytes, bytearray, tuple, None] 
 
@@ -19,3 +19,14 @@ def from_string(value: str) -> Any:
         return eval(value)
     except:
         return value
+    
+def load_body_json(body: bytes | str) -> Optional[dict]:
+    if isinstance(body, bytes):
+        body = body.decode('utf-8')
+    try:
+        body_json = eval(body)
+        if not isinstance(body_json, dict):
+            raise ValueError("Invalid JSON")
+        return body_json
+    except:
+        raise ValueError(f"Invalid eval JSON, body: {body}")

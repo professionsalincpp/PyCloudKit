@@ -1,10 +1,9 @@
 from __future__ import annotations
 import asyncio
-from dataclasses import dataclass, field
-from enum import Enum
-from http.client import HTTPConnection, HTTPResponse
+from http.client import HTTPConnection
 from http.server import BaseHTTPRequestHandler
 from typing import Optional, List, Dict
+from pyserver.src.types import RequestHandler
 from .types import *
 from .utils import *
 
@@ -49,44 +48,64 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
         def __init_handlers(self, handlers: List[RequestHandler]) -> None:
             self.handlers = handlers
 
-        async def handle_get_request(self):
-            # Обрабатываем запрос
-            filename = self.path.rstrip('/')  # удалить "/" в конце
-            params: Dict[str, str] = {}
-            if '?' in filename:
-                filename, params_str = filename.split('?')
-                print("params_str", params_str)
-                for param in params_str.split('&'):
-                    key, value = param.split('=')
-                    params[key] = value
-            for handler in self.handlers:
-                if handler.path == filename and handler.method == RequestHandler.Method.GET:
-                    response: ResponseType = await handler.handle(request=RequestType(status_code=200, headers=self.headers, body=b"", params=params))
-                    response.headers["Connection"] = "close"
-                    self.send_response(response.status_code)
-                    for key, value in response.headers.items():
-                        self.send_header(key, value)
-                    self.end_headers()
-                    if self.client_address:
-                        print(f"Client connected from {self.client_address[0]}:{self.client_address[1]}")
-                        if type(response.body) == str:
-                            response.body = response.body.encode("utf-8")
-                        try:
-                            self.wfile.write(response.body)
-                        except ConnectionAbortedError:
-                            print("Client has closed the connection, skipping response")
-                    return
-            # Отправляем ответ неизвестного запроса
+        def handle_default_request(self):
+            filename, _ = parse_path(path=self.path)
             self.send_response(404)
             self.send_header('Content-type', 'text/plain')
             self.send_header("Content-Encoding", "utf-8")
             self.end_headers()
             self.wfile.write(f"Path: {filename} not found".encode("utf-8"))
 
+        def get_handler(self, path: str, method: RequestHandler.Method) -> Optional[RequestHandler]:
+            for handler in self.handlers:
+                if handler.path == path and handler.method == method:
+                    return handler
+            return None
+        
+        def send_headers(self, headers: Dict[str, str]) -> None:
+            """
+            Send the provided headers in the HTTP response.
+            Parameters:
+                headers (Dict[str, str]): A dictionary containing the headers to be sent.
+            """
+            for key, value in headers.items():
+                self.send_header(key, value)
+            self.end_headers()
+
+        def send_body(self, body: bytes) -> None:
+            """
+            Send the provided body in the HTTP response.
+            Parameters:
+                body (bytes): The body to be sent.
+            """
+            try:
+                self.wfile.write(body)
+            except ConnectionAbortedError:
+                print("Client has closed the connection, skipping response")
+
+        async def process_request(self, handler: RequestHandler, request: RequestType) -> None:
+            response: ResponseType = await handler.handle(request=RequestType(status_code=200, headers=self.headers, body=request.body, params=request.params))
+            response.headers["Connection"] = "close"
+            self.send_response(response.status_code)
+            self.send_headers(response.headers)
+            self.send_body(to_bytes(response.body))
+
+        async def handle_request(self, method: RequestHandler.Method) -> None:
+            # Обрабатываем запрос
+            filename, params = parse_path(path=self.path)
+            handler = self.get_handler(filename, method)
+            request = RequestType(status_code=200, headers=self.headers, body=b"", params=params)
+            if method == RequestHandler.Method.POST:
+                request.body = self.rfile.read(int(self.headers['Content-Length']))
+            if handler:
+                return await self.process_request(handler, request)
+            # Отправляем ответ неизвестного запроса
+            self.handle_default_request()
+
         def do_GET(self):
-            asyncio.run(self.handle_get_request())
+            asyncio.run(self.handle_request(RequestHandler.Method.GET))
 
         def do_POST(self):
-            asyncio.run(self.handle_get_request())
+            asyncio.run(self.handle_request(RequestHandler.Method.POST))
 
     return AsyncRequestHandler
