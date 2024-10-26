@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+pycloudkit/__init__.py
+pycloudkit.egg-info/PKG-INFO
+pycloudkit.egg-info/SOURCES.txt
+pycloudkit.egg-info/dependency_links.txt
+pycloudkit.egg-info/top_level.txt

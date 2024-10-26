@@ -1,3 +1,17 @@
+Metadata-Version: 2.1
+Name: pycloudkit
+Version: 1.0.1
+Summary: A library for creating and working with cloud databases
+Home-page: https://github.com/professionsalincpp/pyserver
+Author: griguchaev
+Author-email: griguchaev@yandex.ru
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # PyCloudKit: A Toolkit for building Clouds with Python
 
 ## Description
@@ -36,9 +50,9 @@ from PyCloudKit import CloudClient
 client = CloudClient('127.0.0.1', 8080)
 
 def main():
-    # Set value in cloud
+    # Р—Р°РґР°С‚СЊ Р·РЅР°С‡РµРЅРёРµ РІ РѕР±Р»Р°РєРµ
     client.set('key', 'value')
-    # Get value from cloud
+    # РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РёР· РѕР±Р»Р°РєР°
     value = client.get('key')
     print(value)
 
@@ -53,6 +67,6 @@ Pyserver can be installed using pip:
 pip install PyCloudKit
 ```
 
-# License
+# Р›РёС†РµРЅР·РёСЏ
 
-PyCloudKit is licensed under the MIT License. [GitHub](https://github.com/professionsalincpp/PyCloudKit/blob/main/LICENSE).
+Pyserver СЏРІР»СЏРµС‚СЃСЏ РѕС‚РєСЂС‹С‚С‹Рј РїСЂРѕРµРєС‚РѕРј. Р’С‹ РјРѕР¶РµС‚Рµ РїРѕР»СѓС‡РёС‚СЊ Р»РёС†РµРЅР·РёСЋ РЅР° [GitHub](https://github.com/professionsalincpp/PyCloudKit/blob/main/LICENSE).
