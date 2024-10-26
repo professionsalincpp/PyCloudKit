@@ -3,7 +3,7 @@ import asyncio
 from http.client import HTTPConnection
 from http.server import BaseHTTPRequestHandler
 from typing import Optional, List, Dict
-from pyserver.src.types import RequestHandler
+from PyCloudKit.src.types import RequestHandler
 from .types import *
 from .utils import *
 
