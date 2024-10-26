@@ -1,7 +1,0 @@
-README.md
-setup.py
-pyserver/__init__.py
-pyserver.egg-info/PKG-INFO
-pyserver.egg-info/SOURCES.txt
-pyserver.egg-info/dependency_links.txt
-pyserver.egg-info/top_level.txt
