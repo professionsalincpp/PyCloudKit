@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Dict
 import inspect
+from http import HTTPMethod, HTTPStatus
 
 @dataclass
 class ResponseType:
@@ -26,10 +27,7 @@ class RequestType(ResponseType):
         return f"Request(status_code={self.status_code}, headers={self.headers}, body={self.body}, params={self.params})"
 
 class RequestHandler:
-    class Method(Enum):
-        GET = 1
-        POST = 2
-    def __init__(self, func: Callable[[RequestType], ResponseType], method: Method=Method.GET, path: str="/") -> None:
+    def __init__(self, func: Callable[[RequestType], ResponseType], method: HTTPMethod = HTTPMethod.GET, path: str="/") -> None:
         self.func = func
         self.method = method
         self.path = path

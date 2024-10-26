@@ -1,5 +1,6 @@
 import asyncio
 import http.server
+from http import HTTPMethod
 from typing import Callable, List, Literal, Optional
 from .request import create_async_request_handler, RequestHandler
 
@@ -16,7 +17,7 @@ class AsyncServer:
     def __post_init__(self):
         pass
 
-    def route(self, path: str, method: Literal[RequestHandler.Method.GET, RequestHandler.Method.POST] = RequestHandler.Method.GET) -> None:
+    def route(self, path: str, method: Literal[HTTPMethod.GET, HTTPMethod.POST] = HTTPMethod.GET) -> None:
         def decorator(func: Callable[[RequestHandler], RequestHandler]) -> Callable[[RequestHandler], RequestHandler]:
             handler = RequestHandler(func, method, path)
             self.handlers.append(handler)

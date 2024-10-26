@@ -2,8 +2,7 @@ __pycache__
 .vscode
 databases
 setup.py
-test.py
 update.bat
 dist
 pyserver.egg-info
-
+*[Tt][Ee][Ss][Tt]*

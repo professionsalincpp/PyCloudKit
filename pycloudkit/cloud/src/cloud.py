@@ -1,8 +1,11 @@
 import sqlite3
-from typing import Union, Any, override, overload
-from ...src.server import AsyncServer
-from ...src.client import AsyncClient
-from ...src.request import *
+from typing import Any
+try:
+    from pycloudkit.src.server import AsyncServer
+    from pycloudkit.src.client import AsyncClient
+    from pycloudkit.src.request import *
+except ImportError:
+    raise ImportError("PyCloudKit is not installed")
 from .cloudtypes import *
 
 
@@ -60,11 +63,11 @@ class CloudServer(AsyncServer):
         super().__init__(host, port)
         self.database = CloudDatabase(database_path)
         self.database.load()
-        self.handlers.append(RequestHandler(self.get_GET, RequestHandler.Method.GET, "/get"))
-        self.handlers.append(RequestHandler(self.set_GET, RequestHandler.Method.GET, "/set"))
-        self.handlers.append(RequestHandler(self.get_POST, RequestHandler.Method.POST, "/get"))
-        self.handlers.append(RequestHandler(self.set_POST, RequestHandler.Method.POST, "/set"))
-        self.handlers.append(RequestHandler(self.delete, RequestHandler.Method.GET, "/delete"))
+        self.handlers.append(RequestHandler(self.get_GET, HTTPMethod.GET, "/get"))
+        self.handlers.append(RequestHandler(self.set_GET, HTTPMethod.GET, "/set"))
+        self.handlers.append(RequestHandler(self.get_POST, HTTPMethod.POST, "/get"))
+        self.handlers.append(RequestHandler(self.set_POST, HTTPMethod.POST, "/set"))
+        self.handlers.append(RequestHandler(self.delete, HTTPMethod.GET, "/delete"))
 
     def start(self) -> None:
         super().start()

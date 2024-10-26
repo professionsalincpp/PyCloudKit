@@ -2,8 +2,7 @@ from __future__ import annotations
 import asyncio
 from http.client import HTTPConnection
 from http.server import BaseHTTPRequestHandler
-from typing import Optional, List, Dict
-from PyCloudKit.src.types import RequestHandler
+from typing import Self, Optional, List, Dict
 from .types import *
 from .utils import *
 
@@ -33,6 +32,20 @@ class AsyncRequest:
     async def close(self) -> None:
         await asyncio.to_thread(self.client.close)
 
+    def __enter__(self) -> Self:
+        asyncio.run(self._start())
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        asyncio.run(self.close())
+
+    async def __aenter__(self) -> Self:
+        await self._start()
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.close()
+
 
 def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_async_request_handler.AsyncRequestHandler]:
     class AsyncRequestHandler(BaseHTTPRequestHandler):
@@ -56,7 +69,7 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
             self.end_headers()
             self.wfile.write(f"Path: {filename} not found".encode("utf-8"))
 
-        def get_handler(self, path: str, method: RequestHandler.Method) -> Optional[RequestHandler]:
+        def get_handler(self, path: str, method: HTTPMethod) -> Optional[RequestHandler]:
             for handler in self.handlers:
                 if handler.path == path and handler.method == method:
                     return handler
@@ -90,12 +103,15 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
             self.send_headers(response.headers)
             self.send_body(to_bytes(response.body))
 
-        async def handle_request(self, method: RequestHandler.Method) -> None:
+        async def handle_request(self, method: HTTPMethod) -> None:
+            """
+            Handle an HTTP request.
+            """
             # Обрабатываем запрос
             filename, params = parse_path(path=self.path)
             handler = self.get_handler(filename, method)
             request = RequestType(status_code=200, headers=self.headers, body=b"", params=params)
-            if method == RequestHandler.Method.POST:
+            if method == HTTPMethod.POST:
                 request.body = self.rfile.read(int(self.headers['Content-Length']))
             if handler:
                 return await self.process_request(handler, request)
@@ -103,9 +119,9 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
             self.handle_default_request()
 
         def do_GET(self):
-            asyncio.run(self.handle_request(RequestHandler.Method.GET))
+            asyncio.run(self.handle_request(HTTPMethod.GET))
 
         def do_POST(self):
-            asyncio.run(self.handle_request(RequestHandler.Method.POST))
+            asyncio.run(self.handle_request(HTTPMethod.POST))
 
     return AsyncRequestHandler
