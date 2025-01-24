@@ -22,6 +22,7 @@ class RequestType(ResponseType):
     A request object
     Represents a HTTP request.
     """
+    path: str
     params: Dict[str, str]
     def __str__(self) -> str:
         return f"Request(status_code={self.status_code}, headers={self.headers}, body={self.body}, params={self.params})"

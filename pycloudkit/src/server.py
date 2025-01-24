@@ -23,6 +23,13 @@ class AsyncServer:
             self.handlers.append(handler)
             return func
         return decorator
+    
+    def routedefault(self, func: Callable[[RequestHandler], RequestHandler]) -> Callable[[RequestHandler], RequestHandler]:
+        def decorator(func: Callable[[RequestHandler], RequestHandler]) -> Callable[[RequestHandler], RequestHandler]:
+            handler = RequestHandler(func, path='any')
+            self.handlers.append(handler)
+            return func
+        return decorator
 
     def start(self) -> None:
         self.server = http.server.HTTPServer((self.host, self.port), create_async_request_handler(self.handlers))

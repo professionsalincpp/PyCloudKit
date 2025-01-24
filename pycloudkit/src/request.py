@@ -15,7 +15,7 @@ class AsyncRequest:
 
     async def _start(self) -> None:
         self.client = HTTPConnection(self.host, self.port)
-        print(f"Client connected {self.client}")
+        # print(f"Client connected {self.client}")
         await asyncio.to_thread(self.client.connect)
 
     async def start(self) -> None:
@@ -70,10 +70,13 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
             self.wfile.write(f"Path: {filename} not found".encode("utf-8"))
 
         def get_handler(self, path: str, method: HTTPMethod) -> Optional[RequestHandler]:
+            _any_handler = None
             for handler in self.handlers:
                 if handler.path == path and handler.method == method:
                     return handler
-            return None
+                elif handler.path == 'any' and handler.method == method:
+                    _any_handler = handler
+            return _any_handler
         
         def send_headers(self, headers: Dict[str, str]) -> None:
             """
@@ -97,7 +100,7 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
                 print("Client has closed the connection, skipping response")
 
         async def process_request(self, handler: RequestHandler, request: RequestType) -> None:
-            response: ResponseType = await handler.handle(request=RequestType(status_code=200, headers=self.headers, body=request.body, params=request.params))
+            response: ResponseType = await handler.handle(request=RequestType(status_code=200, headers=self.headers, body=request.body, params=request.params, path=request.path))
             response.headers["Connection"] = "close"
             self.send_response(response.status_code)
             self.send_headers(response.headers)
@@ -108,9 +111,9 @@ def create_async_request_handler(handlers: List[RequestHandler]) -> type[create_
             Handle an HTTP request.
             """
             # Обрабатываем запрос
-            filename, params = parse_path(path=self.path)
+            filename, params = parse_path(path=decode_uri_params(self.path))
             handler = self.get_handler(filename, method)
-            request = RequestType(status_code=200, headers=self.headers, body=b"", params=params)
+            request = RequestType(status_code=200, headers=self.headers, body=b"", params=params, path=filename)
             if method == HTTPMethod.POST:
                 request.body = self.rfile.read(int(self.headers['Content-Length']))
             if handler:
